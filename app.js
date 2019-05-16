@@ -54,9 +54,8 @@ document.querySelector("#loadButton").addEventListener("click", function() {
     .then(payments => {
       account.payments = payments;
       var currentBalance = calculateBalance(payments, account.initialBalance);
-      // console.log(sum);
-
-      render(account, currentBalance);
+      let mostValuablePay = mostValuablePayment(payments);
+      render(account, currentBalance, mostValuablePay);
     });
 });
 
@@ -87,9 +86,10 @@ function calculateBalance(listPayments, balance) {
  *
  * @param {Object} account The account details
  */
-function render(account, currentBalance) {
+function render(account, currentBalance, mostValuablePay) {
   // Display the account number
   document.querySelector("#accountNumber").innerText = account.number;
+  document.getElementById("mostValuablePayment").innerText = mostValuablePay;
   var currentBalanceElement = document.getElementById("balanceAmount");
   currentBalanceElement.innerText = currentBalance;
 
@@ -114,6 +114,21 @@ function render(account, currentBalance) {
       var amount = document.createElement("TD");
       amount.textContent = payment.amount;
       y.appendChild(amount);
+
+      const tdElement = document.createElement("td");
+      const cancelbtn = document.createElement("button");
+      cancelbtn.setAttribute("type", "button");
+      cancelbtn.setAttribute("class", "remove");
+      cancelbtn.innerText = "cancel";
+
+      tdElement.appendChild(cancelbtn);
+      y.appendChild(tdElement);
+
+      y.addEventListener("click", function(event) {
+        if (event.target.className == "remove") {
+          tableList.removeChild(y);
+        }
+      });
     } else if (payment.completed === true) {
       var y = document.createElement("TR");
       tableList.appendChild(y);
@@ -154,3 +169,19 @@ function render(account, currentBalance) {
  * add up payments, and more.
  */
 //module.exports = calculateBalance;
+
+function mostValuablePayment(payments) {
+  //using a date pattern to filter all the payments made on May-2019
+  let listOfpayments = payments
+    .filter(payment => {
+      const datePattern = "2019-05";
+      //returns list of objects that matches the datePattern and the condition
+      return payment.date.includes(datePattern) && payment.completed === true;
+    })
+    .map(payment => {
+      //return only the array of the amounts from the filtered object.
+      return payment.amount;
+    });
+  //return the most valuable payment from the list.
+  return Math.max.apply(null, listOfpayments);
+}
