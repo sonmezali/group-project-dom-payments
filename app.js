@@ -96,9 +96,9 @@ function render(account, currentBalance) {
   var tableList = document.getElementById("paymentsList");
 
   account.payments.forEach(function(payment) {
-    if (payment.completed === true) {
+    if (payment.completed === false) {
       var y = document.createElement("TR");
-
+      y.setAttribute("class", "pending ");
       tableList.appendChild(y);
       var date = document.createElement("TD");
       date.textContent = payment.date;
@@ -114,8 +114,23 @@ function render(account, currentBalance) {
       var amount = document.createElement("TD");
       amount.textContent = payment.amount;
       y.appendChild(amount);
-    } else {
-      y.setAttribute("class", "pedding");
+    } else if (payment.completed === true) {
+      var y = document.createElement("TR");
+      tableList.appendChild(y);
+      var date = document.createElement("TD");
+      date.textContent = payment.date;
+      y.appendChild(date);
+
+      var status = document.createElement("TD");
+      status.textContent = payment.completed;
+      y.appendChild(status);
+
+      var description = document.createElement("TD");
+      description.textContent = payment.description;
+      y.appendChild(description);
+      var amount = document.createElement("TD");
+      amount.textContent = payment.amount;
+      y.appendChild(amount);
     }
   });
 }
