@@ -36,7 +36,7 @@
 var account = {
   number: 100402153,
   initialBalance: 100,
-  paymentsUrl: '/data/payments.json',
+  paymentsUrl: "/data/payments.json",
   payments: []
 };
 
@@ -48,16 +48,32 @@ var account = {
  *
  * You may edit this code.
  */
-document.querySelector('#loadButton')
-  .addEventListener('click', function () {
-    fetch(account.paymentsUrl)
-      .then(response => response.json())
-      .then(payments => {
-        account.payments = payments;
-        render(account);
-      });
-  });
+document.querySelector("#loadButton").addEventListener("click", function() {
+  fetch(account.paymentsUrl)
+    .then(response => response.json())
+    .then(payments => {
+      account.payments = payments;
+      var currentBalance = calculateBalance(payments, account.initialBalance);
+      // console.log(sum);
 
+      render(account, currentBalance);
+    });
+});
+
+function calculateBalance(listPayments, balance) {
+  var completedPayments = listPayments.filter(function(payment) {
+    return payment.completed === true;
+  });
+  //console.log(completedPayments);
+  var completedAmounts = completedPayments.map(function(payment) {
+    return payment.amount;
+  });
+  var sum = completedAmounts.reduce(function(total, amount) {
+    return total + amount;
+  });
+  var currentBalance = balance - sum;
+  return currentBalance;
+}
 /**
  * Write a render function below that updates the DOM with the
  * account details.
@@ -71,12 +87,48 @@ document.querySelector('#loadButton')
  *
  * @param {Object} account The account details
  */
-function render(account) {
-
+function render(account, currentBalance) {
   // Display the account number
-  document.querySelector('#accountNumber')
-    .innerText = account.number;
-};
+  document.querySelector("#accountNumber").innerText = account.number;
+  var currentBalanceElement = document.getElementById("balanceAmount");
+  currentBalanceElement.innerText = currentBalance;
+
+  var tableList = document.getElementById("paymentsList");
+
+  account.payments.forEach(function(payment) {
+    if (payment.completed === true) {
+      var y = document.createElement("TR");
+
+      tableList.appendChild(y);
+      var date = document.createElement("TD");
+      date.textContent = payment.date;
+      y.appendChild(date);
+
+      var status = document.createElement("TD");
+      status.textContent = payment.completed;
+      y.appendChild(status);
+
+      var description = document.createElement("TD");
+      description.textContent = payment.description;
+      y.appendChild(description);
+      var amount = document.createElement("TD");
+      amount.textContent = payment.amount;
+      y.appendChild(amount);
+    } else {
+      y.setAttribute("class", "pedding");
+    }
+  });
+}
+
+//function calculate the current balance
+
+//currentBalance.innerText = account.initialBalance;
+
+//var moneyPayment = account.payments;
+
+// account.payments.forEach(function(object) {
+// completed payment - in balance
+//completed payment reduce
 
 /**
  * Write any additional functions that you need to complete
@@ -86,3 +138,4 @@ function render(account) {
  * calculate balances, find completed or pending payments,
  * add up payments, and more.
  */
+//module.exports = calculateBalance;
