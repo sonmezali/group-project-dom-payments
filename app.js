@@ -53,26 +53,43 @@ document.querySelector("#loadButton").addEventListener("click", function() {
     .then(response => response.json())
     .then(payments => {
       account.payments = payments;
-      var currentBalance = calculateBalance(payments, account.initialBalance);
-      let mostValuablePay = mostValuablePayment(payments);
-      render(account, currentBalance, mostValuablePay);
+
+      var pendingBalance = document.querySelector("#pendingBalance");
+      var totalIncome = document.querySelector("#totalIncome");
+
+      pendingBalance.textContent = balanceAfterPending(payments);
+      totalIncome.textContent = incomeAllPaymentInMay(payments);
+
+      render(
+        account,
+        balanceAfterPending(payments),
+        incomeAllPaymentInMay(payments)
+      );
     });
 });
 
-function calculateBalance(listPayments, balance) {
-  var completedPayments = listPayments.filter(function(payment) {
-    return payment.completed === true;
-  });
-  //console.log(completedPayments);
-  var completedAmounts = completedPayments.map(function(payment) {
+function balanceAfterPending(allPaymentsAmounts) {
+  var allAmounts = allPaymentsAmounts.map(function(payment) {
     return payment.amount;
   });
-  var sum = completedAmounts.reduce(function(total, amount) {
-    return total + amount;
-  });
-  var currentBalance = balance - sum;
-  return currentBalance;
+  var sumAllAmounts = allAmounts.reduce(
+    (accumulator, currentValue) => accumulator + currentValue
+  );
+  return account.initialBalance - sumAllAmounts;
 }
+
+function incomeAllPaymentInMay(paymentInMay) {
+  var incomeInMay = paymentInMay.filter(function(element) {
+    return element.date.includes("2019-05");
+  });
+  var incomeAmountInMay = incomeInMay.map(function(element) {
+    return element.amount;
+  });
+  return incomeAmountInMay.reduce(
+    (accumulator, currentValue) => accumulator + currentValue
+  );
+}
+
 /**
  * Write a render function below that updates the DOM with the
  * account details.
@@ -86,79 +103,10 @@ function calculateBalance(listPayments, balance) {
  *
  * @param {Object} account The account details
  */
-function render(account, currentBalance, mostValuablePay) {
+function render(account) {
   // Display the account number
   document.querySelector("#accountNumber").innerText = account.number;
-  document.getElementById("mostValuablePayment").innerText = mostValuablePay;
-  var currentBalanceElement = document.getElementById("balanceAmount");
-  currentBalanceElement.innerText = currentBalance;
-
-  var tableList = document.getElementById("paymentsList");
-
-  account.payments.forEach(function(payment) {
-    if (payment.completed === false) {
-      var y = document.createElement("TR");
-      y.setAttribute("class", "pending ");
-      tableList.appendChild(y);
-      var date = document.createElement("TD");
-      date.textContent = payment.date;
-      y.appendChild(date);
-
-      var status = document.createElement("TD");
-      status.textContent = payment.completed;
-      y.appendChild(status);
-
-      var description = document.createElement("TD");
-      description.textContent = payment.description;
-      y.appendChild(description);
-      var amount = document.createElement("TD");
-      amount.textContent = payment.amount;
-      y.appendChild(amount);
-
-      const tdElement = document.createElement("td");
-      const cancelbtn = document.createElement("button");
-      cancelbtn.setAttribute("type", "button");
-      cancelbtn.setAttribute("class", "remove");
-      cancelbtn.innerText = "cancel";
-
-      tdElement.appendChild(cancelbtn);
-      y.appendChild(tdElement);
-
-      y.addEventListener("click", function(event) {
-        if (event.target.className == "remove") {
-          tableList.removeChild(y);
-        }
-      });
-    } else if (payment.completed === true) {
-      var y = document.createElement("TR");
-      tableList.appendChild(y);
-      var date = document.createElement("TD");
-      date.textContent = payment.date;
-      y.appendChild(date);
-
-      var status = document.createElement("TD");
-      status.textContent = payment.completed;
-      y.appendChild(status);
-
-      var description = document.createElement("TD");
-      description.textContent = payment.description;
-      y.appendChild(description);
-      var amount = document.createElement("TD");
-      amount.textContent = payment.amount;
-      y.appendChild(amount);
-    }
-  });
 }
-
-//function calculate the current balance
-
-//currentBalance.innerText = account.initialBalance;
-
-//var moneyPayment = account.payments;
-
-// account.payments.forEach(function(object) {
-// completed payment - in balance
-//completed payment reduce
 
 /**
  * Write any additional functions that you need to complete
@@ -168,20 +116,3 @@ function render(account, currentBalance, mostValuablePay) {
  * calculate balances, find completed or pending payments,
  * add up payments, and more.
  */
-//module.exports = calculateBalance;
-
-function mostValuablePayment(payments) {
-  //using a date pattern to filter all the payments made on May-2019
-  let listOfpayments = payments
-    .filter(payment => {
-      const datePattern = "2019-05";
-      //returns list of objects that matches the datePattern and the condition
-      return payment.date.includes(datePattern) && payment.completed === true;
-    })
-    .map(payment => {
-      //return only the array of the amounts from the filtered object.
-      return payment.amount;
-    });
-  //return the most valuable payment from the list.
-  return Math.max.apply(null, listOfpayments);
-}
